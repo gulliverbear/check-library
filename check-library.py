@@ -101,11 +101,30 @@ def append_new_titles(dvd_file, new_titles, today):
 
 def calculate_wait(hours_to_check):
     '''
-    TO DO:
     hours_to_check: list of hours (from 0-24) for which to check site
     returns: how many seconds to wait until next check
     '''
-    pass
+    # sort current hour into list of hours_to_check
+    now = datetime.datetime.now()
+    all_hours = sorted(hours_to_check + [now.hour])
+    
+    # get index of where current hour is
+    # use right-most index in case of duplicate hours
+    for index, item in enumerate(reversed(all_hours)):
+        if item == now.hour:
+            hour_index = len(all_hours) - index - 1
+            break
+
+    next_check = now
+    
+    # if there are no more checkpoints today set next_check to tomorrow
+    if hour_index == len(all_hours) - 1: # next hour will be tomorrow
+        next_check = next_check + datetime.timedelta(days = 1)
+        
+    # set the hour of next_check
+    next_hour = all_hours[(hour_index + 1) % len(all_hours)]
+    next_check = next_check.replace(hour=next_hour, minute=0, second=0, microsecond=0)
+    return next_check - now
 
 def wrapper(url, user_agent, n_repeat, delay, 
 	gmail_user, gmail_pwd, email_list, dvd_file):
